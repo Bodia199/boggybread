@@ -1,96 +1,65 @@
-let tg = window.Telegram.WebApp;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-tg.expand();
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-tg.MainButton.textColor = '#FFFFFF';
-tg.MainButton.color = '#2cab37';
+let breadArray = [];
+let score = 0;
 
-let item = "";
+class Bread {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = -50;
+        this.size = 50;
+        this.speed = 2;
+    }
 
-let btn1 = document.getElementById("btn1");
-let btn2 = document.getElementById("btn2");
-let btn3 = document.getElementById("btn3");
-let btn4 = document.getElementById("btn4");
-let btn5 = document.getElementById("btn5");
-let btn6 = document.getElementById("btn6");
+    draw() {
+        ctx.fillStyle = 'brown';
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+    }
 
-btn1.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 1!");
-		item = "1";
-		tg.MainButton.show();
-	}
-});
+    update() {
+        this.y += this.speed;
+    }
+}
 
-btn2.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 2!");
-		item = "2";
-		tg.MainButton.show();
-	}
-});
+function spawnBread() {
+    breadArray.push(new Bread());
+}
 
-btn3.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 3!");
-		item = "3";
-		tg.MainButton.show();
-	}
-});
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    breadArray.forEach((bread, index) => {
+        bread.update();
+        bread.draw();
 
-btn4.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 4!");
-		item = "4";
-		tg.MainButton.show();
-	}
-});
+        if (bread.y + bread.size > canvas.height) {
+            breadArray.splice(index, 1);
+        }
+    });
+}
 
-btn5.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 5!");
-		item = "5";
-		tg.MainButton.show();
-	}
-});
+function detectCollision(event) {
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
 
-btn6.addEventListener("click", function(){
-	if (tg.MainButton.isVisible) {
-		tg.MainButton.hide();
-	}
-	else {
-		tg.MainButton.setText("Вы выбрали товар 6!");
-		item = "6";
-		tg.MainButton.show();
-	}
-});
+    breadArray.forEach((bread, index) => {
+        if (mouseX > bread.x && mouseX < bread.x + bread.size &&
+            mouseY > bread.y && mouseY < bread.y + bread.size) {
+            breadArray.splice(index, 1);
+            score++;
+            console.log(`Score: ${score}`);
+        }
+    });
+}
 
+setInterval(spawnBread, 1000);
+function gameLoop() {
+    update();
+    requestAnimationFrame(gameLoop);
+}
 
-Telegram.WebApp.onEvent("mainButtonClicked", function(){
-	tg.sendData(item);
-});
-
-
-let usercard = document.getElementById("usercard");
-
-let p = document.createElement("p");
-
-p.innerText = `${tg.initDataUnsafe.user.first_name}
-${tg.initDataUnsafe.user.last_name}`;
-
-usercard.appendChild(p);
+canvas.addEventListener('click', detectCollision);
+gameLoop();
